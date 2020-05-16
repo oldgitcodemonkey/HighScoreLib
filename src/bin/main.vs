@@ -1,0 +1,14 @@
+al C:114a .scores
+al C:80b .upstartEnd
+al C:1000 .main
+al C:1013 .initHardware
+al C:1168 .scorePositions
+al C:10a4 .selfMod
+al C:1039 .highScore
+al C:10d6 .selfMod2
+al C:10e8 .titleText
+al C:115e .namePositions
+al C:1172 .namePointer
+al C:1013 .setup
+al C:1039 .showHighScore
+al C:10fa .playerNames

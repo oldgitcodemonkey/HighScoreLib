@@ -1,0 +1,18 @@
+.label main=$1000 {
+}
+.label highScore=$1039 {
+  .label scores=$114a
+  .label titleText=$10e8
+  .label namePositions=$115e
+  .label namePointer=$1172
+  .label showHighScore=$1039 {
+    .label selfMod=$10a4
+    .label selfMod2=$10d6
+  }
+  .label playerNames=$10fa
+  .label scorePositions=$1168
+}
+.label setup=$1013 {
+  .label initHardware=$1013 {
+  }
+}

@@ -1,0 +1,17 @@
+parsing
+flex pass 1
+flex pass 2
+flex pass 3
+Output pass
+Writing prg file: /Users/andrew/Development/HighScoreLib/src/bin/main.prg
+
+Memory Map
+----------
+Default-segment:
+  $0801-$080c Basic
+  $080e-$080d Basic End
+  $1000-$1171 Unnamed
+  $f000-$f7ff Unnamed
+
+Writing Vice symbol file: /Users/andrew/Development/HighScoreLib/src/bin/main.vs
+Writing Symbol file: main.sym
