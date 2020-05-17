@@ -234,6 +234,8 @@ highScore:{
 	namePointer:
 		.byte 0 
 
+	onHighScore:
+		.byte 0
 
 	updateHighScore:{
 
@@ -292,10 +294,12 @@ highScore:{
 
 	!testEndOfList:	
 		cpx #$13									// reached the bottom of the high score table?
-		bne !testScoreLoop-
+		bmi !testScoreLoop-
 
 		// if you get here then you're not on the high score table
-
+		
+		lda #$ff									// set the on-high-score flag to be nope
+		sta onHighScore
 		rts
 
 	!foundHighScore:
@@ -303,9 +307,13 @@ highScore:{
 		lsr 										// push the bottom two bit off to give
 		lsr  										// the position of the score
 
+		sta savePosition
+		sta onHighScore 							// save the position for input routine
+
+
 	// now move all the lower names down 16 bytes to make space for the new one
 
-		
+	
 
 	/*
 		To scroll the screen down 
@@ -326,7 +334,7 @@ highScore:{
 		asl
 
 		tax 									// get a into x as a counter
-		ldy #$3f								// point to the end of the name list
+		ldy #$40								// point to the end of the name list
 
 		beq !noShift+ 							// if this is the last entry in the list then there is no point shifting stuff
 
@@ -338,20 +346,21 @@ highScore:{
 		dex 									// decrease the counter
 		bpl !nameMoveLoop- 						// loop if there are still chars to moce
 
-		inc $d020
 	!noShift:
 
 		// now clear the current name
 
 		// add 16 back to y or y will become negative
-		
+
 		tya
 		clc
-		adc #$10
+		adc #$20
+		and #$f0
 		tay
+		dey
 
-		lda #$20 								// load A with space char
-		ldx #$15
+		lda #$10								// load A with space char
+		ldx #$0f
 	!clearLoop:
 		sta playerNames,y 						// write spave to table
 		dey
@@ -359,11 +368,204 @@ highScore:{
 		bpl !clearLoop-
 
 
+		// now do the same to the scores but this time we will
+
+		lda savePosition
+
+		sec
+		sbc #$05								// this mess is the same as A - 4
+		eor #$ff  
+
+		asl
+		asl										// multiply by 4 to give the number of bytes to move
+
+
+		tax 									// get a into x as a counter
+		ldy #$0f 								// point to the end of the name list
+
+	!nameMoveLoop:
+
+		lda scores,y 						 	// get a letter
+		sta scores+4,y 						// move it down a letter
+
+		dey 									// move back up the list
+		dex 									// decrease the counter
+		bpl !nameMoveLoop- 						// loop if there are still chars to moce
+
+
+		// insert player score
+
+		// add 5 back onto y
+		iny
+		iny
+		iny										// quicker than dicking about with a
+		iny
+		iny
+
+		ldx #$03
+	!clearLoop:
+		lda playerScore,x
+		sta scores,y 						// write spave to table
+		dey
+		dex
+		bpl !clearLoop-
+
+		lda #0
+		sta $d020
+
+		// lda #0
+		// sta $d020
+
+		jsr highScore.showHighScore	
+
+	
+
+		// now type in the new name of the player
+
+		lda savePosition				// retrieve the line of the current score
+		asl 							// double it to use as an index into a 16 bit table
+		tay 							// put it in index register
+
+		asl
+		asl 							// multiply the line by 16 to get the offset into the playernames
+		asl
+
+		tax
+
+		lda namePositions,y 			// get LSB
+		sta inputSelfMod + 1 			// update self mod LSB
+		lda namePositions + 1,y 		// Get MSB
+		sta inputSelfMod + 2 			// update seld mod MSB
+
+
+		ldy #$00 						// set the pointer to the begining
+	!inputLoop:
+		txa 							// save the registers to the stack as the Keyboard routine
+		pha
+		tya 							// destroys them
+		pha 
+
+	!waitForKey:
+		eor $d020
+		jsr Keyboard 					// returns value in A carry clear signifys key pressed	
+		bcs !waitForKey-
+
+	
+		stx keyPressedX
+		inc $d020
+
+		sta keyPressed					// save the key
+
+		pla 							// get the index registers back
+		tay
+		pla
+		tax
+
+		lda keyPressed
+
+		cmp #$ff 						// A = FF means special code in X which we saved to KeyPressX
+		bne !notSpecialKey+
+		
+		lda keyPressedX
+		cmp #$02 						// X=2 means return
+		beq !enterPressed+				// our work is done
+
+		cmp #$01 						// X=1 means back space
+		bne !inputLoop- 				// anyother special key we dont care about
+
+		// delete pressed
+
+		cpy #0 							// if its at the start then theres nowhere to go back to
+		beq !inputLoop-
+
+		dey 							// decrease pointer
+		dex		
+
+		lda #$20 						// set char to space
+
+		jmp !printLetter+
+
+
+
+
+	!notSpecialKey:
+
+		cpy #$0f 						// check how many letters
+		bpl !inputLoop-					// too many chars
+
+		// check for Valid Chars - A to Z and 0 to 9
+
+		cmp #$01   					 	// A
+		bmi !inputLoop-
+
+		cmp #$1a 						// Z
+		bpl !notAlpha+
+
+		// map keyboard to char set
+
+		lda #firstLetter - 1 			// offset to char set
+		clc
+		adc keyPressed 					// add on letter
+
+		jmp !printLetter+
+
+	
+	!notAlpha:
+		.break
+
+		cmp #$30 						// 0
+	
+		// put the letter on screen and into the hight score table
+	!printLetter:
+
+
+		cmp #$20 						// if this is space we need to swap in the spave char for the screen
+		bne inputSelfMod
+
+		lda #$00						// space char
+
+	inputSelfMod:
+		sta $B00B,y	 					//update screen
+
+		// store names in ascii
+		
+  
+		sta keyPressed 				// subract to the letter pressed from the base ASCII for A
+		lda #asciiA-1
+		clc
+		adc keyPressed
+		sta playerNames,x 				// update high code table
+
+
+		cmp #$00 						// if del pressed then dont increase the pointer
+		beq !inputLoop-
+
+		inx 							//increase table index
+		iny 							//increase 
+
+		jmp !inputLoop-
+
+	!enterPressed:
+
+		lda #10
+		sta $d020
+.break
 		rts
+
+
 
 
 	}
 
 	playerScore:
 		.text "    "
+
+	savePosition:
+		.byte 0
+
+	keyPressed:
+		.byte 0
+
+	keyPressedX:
+		.byte 0
 }

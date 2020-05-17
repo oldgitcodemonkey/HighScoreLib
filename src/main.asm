@@ -26,13 +26,17 @@ main:{
 
 	lda #$50
 	sta currentScore
-	lda #$07
+	lda #$06
 	sta currentScore +1 
 
 	jsr highScore.showHighScore
 	pressFire()
 	jsr highScore.updateHighScore
+	pressFire()
+	lda #0
+	sta backgroundColour
 	jsr highScore.showHighScore
+
 	rts
 
 }
