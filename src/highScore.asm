@@ -439,6 +439,7 @@ highScore:{
 
 
 		ldy #$00 						// set the pointer to the begining
+		sty delDebounce 				// clear the intital debounce flag
 	!inputLoop:
 		txa 							// save the registers to the stack as the Keyboard routine
 		pha
@@ -446,15 +447,29 @@ highScore:{
 		pha 
 
 	!waitForKey:
-		eor $d020
 		jsr Keyboard 					// returns value in A carry clear signifys key pressed	
 		bcs !waitForKey-
 
-	
-		stx keyPressedX
-		inc $d020
+		// debounce delete key
 
+		cmp #$ff
+		bne !noDebounce+
+
+		cpx #$01
+		bne !noDebounce+
+
+		ldy delDebounce
+		beq	!noDebounce+
+
+		inc $d020
+		jmp !waitForKey-
+
+!noDebounce:
+		stx keyPressedX
 		sta keyPressed					// save the key
+
+		ldy #$00
+		sty delDebounce					// clear the debouce flag
 
 		pla 							// get the index registers back
 		tay
@@ -475,8 +490,16 @@ highScore:{
 
 		// delete pressed
 
-		cpy #0 							// if its at the start then theres nowhere to go back to
-		beq !inputLoop-
+		lda delDebounce					// if its at the start then theres nowhere to go back to
+		bne !inputLoop-
+
+		// check debounce
+
+		lda delDebounce
+		bne !inputLoop- 				// debounce the delete key
+
+		lda  #$01
+		sta delDebounce 		 		// set flag		
 
 		dey 							// decrease pointer
 		dex		
@@ -501,7 +524,7 @@ highScore:{
 		cmp #$1a 						// Z
 		bpl !notAlpha+
 
-		// map keyboard to char set
+		// map keyboard to char set a-z
 
 		lda #firstLetter - 1 			// offset to char set
 		clc
@@ -511,10 +534,27 @@ highScore:{
 
 	
 	!notAlpha:
-		.break
+//.break
+		// check for numberics
 
 		cmp #$30 						// 0
-	
+		bmi !inputLoop-					// less than 0
+
+		cmp #$3a 						// 9
+		bmi !isANumber+					// in the range
+
+		jmp !inputLoop- 				// try  again
+
+	!isANumber:
+		// map keyboard to char set 0-9
+		sec 							// map the key value down to the numberic value
+		sbc #$30
+		clc
+		adc #firstNumber    			// offset to char set
+		// clc
+		// adc keyPressed
+
+
 		// put the letter on screen and into the hight score table
 	!printLetter:
 
@@ -536,10 +576,13 @@ highScore:{
 		adc keyPressed
 		sta playerNames,x 				// update high code table
 
-
+		lda keyPressed
 		cmp #$00 						// if del pressed then dont increase the pointer
-		beq !inputLoop-
+		bne !incCounter+				// jump too long
 
+		jmp !inputLoop-
+
+	!incCounter:
 		inx 							//increase table index
 		iny 							//increase 
 
@@ -549,7 +592,7 @@ highScore:{
 
 		lda #10
 		sta $d020
-.break
+
 		rts
 
 
@@ -567,5 +610,8 @@ highScore:{
 		.byte 0
 
 	keyPressedX:
+		.byte 0
+
+	delDebounce:
 		.byte 0
 }

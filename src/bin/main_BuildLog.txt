@@ -10,8 +10,8 @@ Memory Map
 Default-segment:
   $0801-$080c Basic
   $080e-$080d Basic End
-  $1000-$12c9 Unnamed
-  $12ca-$14d0 Keyboard Scan Routine
+  $1000-$12ff Unnamed
+  $1300-$1506 Keyboard Scan Routine
   $f000-$f7ff Unnamed
 
 Writing Vice symbol file: /Users/andrew/Development/HighScoreLib/src/bin/main.vs
