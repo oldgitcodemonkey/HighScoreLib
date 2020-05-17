@@ -4,35 +4,48 @@
 
 BasicUpstart2(main)
 
+
 *=$1000
 
 // import constants and variable files
 #import "../lib/vic.asm"
 
+.macro pressFire(){
+
+	lda joystickPort2
+	and #$10
+	bne *-5
+}
 
 main:{
 
 	jsr setup.initHardware
 
-	// quick char Ram test
+	// set a score in current score (this is bcd)
+	// so current score = 250
 
-	lda #1
-	ldy #0
-	!:
-	sta screenRam,y
-	iny
-	cpy #$ff
-	bne !-
+	lda #$50
+	sta currentScore
+	lda #$07
+	sta currentScore +1 
 
 	jsr highScore.showHighScore
-
+	pressFire()
+	jsr highScore.updateHighScore
+	jsr highScore.showHighScore
 	rts
 
 }
 
+// globals (too lazy to stick them in a globals file for this)
+
+currentScore:
+ 	.word 0
+
 //import library routines
 #import "../lib/hardwareInit.asm"
 #import "./highscore.asm"
+#import "../lib/keyboard.asm"
 
 
 *=$f000

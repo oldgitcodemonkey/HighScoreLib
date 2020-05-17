@@ -1,18 +1,39 @@
 .label main=$1000 {
 }
-.label highScore=$1039 {
-  .label scores=$114a
-  .label titleText=$10e8
-  .label namePositions=$115e
-  .label namePointer=$1172
-  .label showHighScore=$1039 {
-    .label selfMod=$10a4
-    .label selfMod2=$10d6
+.label highScore=$1046 {
+  .label scores=$1157
+  .label playerScore=$11f4
+  .label titleText=$10f5
+  .label namePositions=$116b
+  .label namePointer=$117f
+  .label updateHighScore=$1180 {
   }
-  .label playerNames=$10fa
-  .label scorePositions=$1168
+  .label showHighScore=$1046 {
+    .label selfMod=$10b1
+    .label selfMod2=$10e3
+  }
+  .label playerNames=$1107
+  .label scorePositions=$1175
 }
-.label setup=$1013 {
-  .label initHardware=$1013 {
+.label currentScore=$101e
+.label Keyboard=$11f8 {
+  .label Buffer=$13f9
+  .label TooManyNewKeys=$13aa
+  .label Return=$1395
+  .label BufferQuantity=$13fd
+  .label SimultaneousAlphanumericKeysFlag=$13fe
+  .label KeyInRow=$11fb
+  .label NoActivityDetected=$124b
+  .label BufferEmpty=$1393
+  .label Exist=$1376
+  .label KeyFound=$1233
+  .label ControlPort=$125d
+  .label KeyTable=$13b6
+  .label BufferOld=$13f6
+  .label Main=$1261
+  .label OverFlow=$1243
+}
+.label setup=$1020 {
+  .label initHardware=$1020 {
   }
 }

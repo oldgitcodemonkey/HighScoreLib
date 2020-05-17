@@ -71,4 +71,7 @@ AUTOSTART: Ready
 AUTOSTART: Turning Warp mode off
 AUTOSTART: Starting program.
 AUTOSTART: Done.
-Sound: Warning - Buffer drained
+Writing configuration file `/Users/andrew/.vice/sdl-vicerc'.
+
+Exiting...
+Sound: Closing device `sdl'

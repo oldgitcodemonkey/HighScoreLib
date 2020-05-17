@@ -232,6 +232,138 @@ highScore:{
 		.word screenRam + (40*6) + 26, screenRam + 40*8 + 26, screenRam + 40*10 + 26,screenRam + 40*12 + 26,screenRam + 40*14 + 26
 
 	namePointer:
-		.byte
+		.byte 0 
 
+
+	updateHighScore:{
+
+		// convert the player score to text to compate with high score table
+
+		lda currentScore
+		and #$0F 									// get low nibble
+		clc
+		adc #ascii0 								// convert it to ascii
+		sta playerScore + 3
+
+		lda currentScore
+		lsr
+		lsr 										// shift the top nibble into the bottom nibble
+		lsr
+		lsr
+		adc #ascii0									// convert to ascii
+		sta playerScore + 2
+
+		lda currentScore + 1
+		and #$0F 									// get low nibble
+		clc
+		adc #ascii0 								// convert it to ascii
+		sta playerScore + 1
+
+		// dont need to bother about 1st character as scores are 3 digits
+
+		// now check if the score is better that the existing ones
+
+		ldx #0										// pointer to start of score table
+	!testScoreLoop:
+
+		ldy #0 										// pointer to start of player score
+	!nextDigitTest:
+		lda scores,x 								// compare this score to current score
+		cmp playerScore,y
+
+		bmi !foundHighScore+ 						// if current score is greater then insert new score
+		bne !skipToNextScore+						// if current score is less than then go down a line
+
+		iny 										// increase index
+		inx 										// next high score table entry
+
+
+		cpy #$04									// passed the end of the score, check next one down
+		bne !nextDigitTest-
+
+		jmp !testEndOfList+
+
+	!skipToNextScore:								// if you get here the current score is higher than the player socre
+		txa  										// so skip to the next score
+		clc
+		adc #$04									// add 4 to get to the necxt score
+		and #%11111100								// mask out lower 2 bits to make sure the pointer starts at the begining
+		tax 										// put the result back into the register
+
+	!testEndOfList:	
+		cpx #$13									// reached the bottom of the high score table?
+		bne !testScoreLoop-
+
+		// if you get here then you're not on the high score table
+
+		rts
+
+	!foundHighScore:
+		txa 										// get x into A to math
+		lsr 										// push the bottom two bit off to give
+		lsr  										// the position of the score
+
+	// now move all the lower names down 16 bytes to make space for the new one
+
+		
+
+	/*
+		To scroll the screen down 
+
+		x holds the the row that needs moving down
+
+		y will hold the pointer into the data
+
+	*/
+
+		sec
+		sbc #$05								// this mess is the same as A - 4
+		eor #$ff  
+
+		asl
+		asl										// multiply by  16 to give the number of bytes to move
+		asl
+		asl
+
+		tax 									// get a into x as a counter
+		ldy #$3f								// point to the end of the name list
+
+		beq !noShift+ 							// if this is the last entry in the list then there is no point shifting stuff
+
+	!nameMoveLoop:
+		lda playerNames,y 						// get a letter
+		sta playerNames +16 ,y 					// move it down a letter
+
+		dey 									// move back up the list
+		dex 									// decrease the counter
+		bpl !nameMoveLoop- 						// loop if there are still chars to moce
+
+		inc $d020
+	!noShift:
+
+		// now clear the current name
+
+		// add 16 back to y or y will become negative
+		
+		tya
+		clc
+		adc #$10
+		tay
+
+		lda #$20 								// load A with space char
+		ldx #$15
+	!clearLoop:
+		sta playerNames,y 						// write spave to table
+		dey
+		dex
+		bpl !clearLoop-
+
+
+		rts
+
+
+	}
+
+	playerScore:
+		.text "    "
 }
