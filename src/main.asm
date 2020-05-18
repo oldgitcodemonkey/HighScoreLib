@@ -24,9 +24,9 @@ main:{
 	// set a score in current score (this is bcd)
 	// so current score = 250
 
-	lda #$50
+	lda #$01
 	sta currentScore
-	lda #$04
+	lda #$09
 	sta currentScore +1 
 
 	jsr highScore.showHighScore

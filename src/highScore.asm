@@ -1,9 +1,17 @@
-//
-//High score librabry
-//
+/*
 
-// .showHighScore 				- displays the high score table
-// .updateHighScore 			- checks the current score and gets a new name if relevent
+	High score librabry
+
+	17 May 2020
+
+	By Andrew Shore
+
+	lincence: MIT
+
+	.showHighScore 				- displays the high score table
+	.updateHighScore 			- checks the current score and gets a new name if relevent
+
+*/
 
 .const firstLetter = 1							// the char number of A in the char set
 .const asciiA = 65								// the ascii value of used by kick
@@ -387,11 +395,11 @@ highScore:{
 		dey 									// move back up the list
 		dex 									// decrease the counter
 		bpl !nameMoveLoop- 						// loop if there are still chars to moce
-//////// error
+
 
 		// insert player score
 
-		// add 5 back onto y
+		// add 4 back onto y
 		iny
 		iny
 		iny										// quicker than dicking about with a
