@@ -448,28 +448,30 @@ highScore:{
 
 	!waitForKey:
 		jsr Keyboard 					// returns value in A carry clear signifys key pressed	
+		php
+		cmp #$ff
+		beq !testflag+
+ 		ldy #0
+ 		sty delDebounce
+	!testflag:
+		plp
 		bcs !waitForKey-
 
 		// debounce delete key
 
-		cmp #$ff
-		bne !noDebounce+
-
-		cpx #$01
-		bne !noDebounce+
-
 		ldy delDebounce
-		beq	!noDebounce+
+		beq !noDebounce+
 
-		inc $d020
+
+
+		// cmp #$ff
+		// bne !noDebounce+
+		// inc $d020
 		jmp !waitForKey-
 
 !noDebounce:
 		stx keyPressedX
 		sta keyPressed					// save the key
-
-		ldy #$00
-		sty delDebounce					// clear the debouce flag
 
 		pla 							// get the index registers back
 		tay
@@ -490,8 +492,6 @@ highScore:{
 
 		// delete pressed
 
-		lda delDebounce					// if its at the start then theres nowhere to go back to
-		bne !inputLoop-
 
 		// check debounce
 
@@ -500,6 +500,9 @@ highScore:{
 
 		lda  #$01
 		sta delDebounce 		 		// set flag		
+
+		cpy #$00
+		beq !inputLoop- 				// if at start cant go back more
 
 		dey 							// decrease pointer
 		dex		
@@ -521,7 +524,7 @@ highScore:{
 		cmp #$01   					 	// A
 		bmi !inputLoop-
 
-		cmp #$1a 						// Z
+		cmp #$1b 						// Z
 		bpl !notAlpha+
 
 		// map keyboard to char set a-z
@@ -534,7 +537,7 @@ highScore:{
 
 	
 	!notAlpha:
-//.break
+
 		// check for numberics
 
 		cmp #$30 						// 0
@@ -551,10 +554,7 @@ highScore:{
 		sbc #$30
 		clc
 		adc #firstNumber    			// offset to char set
-		// clc
-		// adc keyPressed
-
-
+		jmp inputSelfMod
 		// put the letter on screen and into the hight score table
 	!printLetter:
 
