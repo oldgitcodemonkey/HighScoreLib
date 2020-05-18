@@ -16,7 +16,6 @@
 .const titleLine = screenRam + 3*40 + 11		// memory address to start printing 
 
 
-
 highScore:{
 
 	showHighScore:{
@@ -196,19 +195,6 @@ highScore:{
 
 		bne !playerLoop-
 
-
-
-		// ldy #$0
-		// !:
-		// 	lda highScore.playerNames,y
-		// 	clc
-		// 	adc #charOffset
-		// 	sta screenRam,y
-
-		// 	iny
-		// 	cpy #$50
-		// 	bne !-
-
 		rts
 
 
@@ -240,6 +226,15 @@ highScore:{
 	updateHighScore:{
 
 		// convert the player score to text to compate with high score table
+
+		/* 	replace currentScore with the variable containing the current score
+			 note this assumes the score is stored in little endian formate and is converted
+			 into readbale text
+
+			 If score is stored in bigendian change the order the currentScoe is converted
+
+		*/
+			
 
 		lda currentScore
 		and #$0F 									// get low nibble
@@ -316,7 +311,7 @@ highScore:{
 	
 
 	/*
-		To scroll the screen down 
+		To scroll the list down 
 
 		x holds the the row that needs moving down
 
@@ -366,7 +361,7 @@ highScore:{
 		dey
 		dex
 		bpl !clearLoop-
-
+ 
 
 		// now do the same to the scores but this time we will
 
@@ -381,17 +376,18 @@ highScore:{
 
 
 		tax 									// get a into x as a counter
+		dex
 		ldy #$0f 								// point to the end of the name list
 
 	!nameMoveLoop:
 
 		lda scores,y 						 	// get a letter
-		sta scores+4,y 						// move it down a letter
+		sta scores+4,y 						   // move it down a letter
 
 		dey 									// move back up the list
 		dex 									// decrease the counter
 		bpl !nameMoveLoop- 						// loop if there are still chars to moce
-
+//////// error
 
 		// insert player score
 
@@ -400,7 +396,7 @@ highScore:{
 		iny
 		iny										// quicker than dicking about with a
 		iny
-		iny
+
 
 		ldx #$03
 	!clearLoop:
@@ -430,9 +426,9 @@ highScore:{
 		asl 							// multiply the line by 16 to get the offset into the playernames
 		asl
 
-		tax
+		tax 							// x hold pointer into high score table
 
-		lda namePositions,y 			// get LSB
+		lda namePositions,y 			// get LSB for screen position
 		sta inputSelfMod + 1 			// update self mod LSB
 		lda namePositions + 1,y 		// Get MSB
 		sta inputSelfMod + 2 			// update seld mod MSB
@@ -462,11 +458,6 @@ highScore:{
 		ldy delDebounce
 		beq !noDebounce+
 
-
-
-		// cmp #$ff
-		// bne !noDebounce+
-		// inc $d020
 		jmp !waitForKey-
 
 !noDebounce:

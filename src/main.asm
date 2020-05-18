@@ -26,7 +26,7 @@ main:{
 
 	lda #$50
 	sta currentScore
-	lda #$06
+	lda #$04
 	sta currentScore +1 
 
 	jsr highScore.showHighScore
