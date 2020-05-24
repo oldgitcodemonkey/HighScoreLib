@@ -51,7 +51,7 @@ highScore:{
 		beq !titleComplete+						// if this is terminator exist loop
 
 		cmp #$20								// check for ascii space (32)
-		beq !skipPrint+							// if its a spave dont print anything
+		beq !skipPrint+							// if its a space dont print anything
 
 		// check for a letter or number
 		cmp #asciiA
@@ -365,7 +365,7 @@ highScore:{
 		lda #$10								// load A with space char
 		ldx #$0f
 	!clearLoop:
-		sta playerNames,y 						// write spave to table
+		sta playerNames,y 						// write space to table
 		dey
 		dex
 		bpl !clearLoop-
@@ -409,7 +409,7 @@ highScore:{
 		ldx #$03
 	!clearLoop:
 		lda playerScore,x
-		sta scores,y 						// write spave to table
+		sta scores,y 						// write space to table
 		dey
 		dex
 		bpl !clearLoop-
@@ -558,7 +558,7 @@ highScore:{
 	!printLetter:
 
 
-		cmp #$20 						// if this is space we need to swap in the spave char for the screen
+		cmp #$20 						// if this is space we need to swap in the space char for the screen
 		bne inputSelfMod
 
 		lda #$00						// space char
